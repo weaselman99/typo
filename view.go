@@ -14,9 +14,9 @@ var (
 	defaultTextColour     = lipgloss.Color("#5e81ac")
 	correctLetterColour   = lipgloss.Color("#3b4252")
 	defaultLetterColour   = lipgloss.Color("#e5e9f0")
+	mutedTextColour       = lipgloss.Color("#c0c0c0")
 	incorrectLetterColour = lipgloss.Color("#bf616a")
 	borderForeColour      = lipgloss.Color("#5e81ac")
-	backgroundColour      = lipgloss.Color("#222222")
 )
 
 var letterStyle = lipgloss.NewStyle().
@@ -36,13 +36,26 @@ var incorrectLetterStyle = lipgloss.NewStyle().
 	Foreground(incorrectLetterColour)
 
 var defaultTextStyle = lipgloss.NewStyle().
-	Foreground(defaultTextColour).Background(backgroundColour)
+	Foreground(defaultTextColour)
+
+var areaStyle = lipgloss.NewStyle().
+	Margin(1, 1, 1, 1).Align(lipgloss.Left)
+
+var titleStyle = lipgloss.NewStyle().
+	Bold(true).
+	Foreground(defaultLetterColour)
+
+var borderStyle = lipgloss.NewStyle().
+	Align(lipgloss.Center).
+	Padding(1).
+	Border(lipgloss.DoubleBorder()).
+	BorderForeground(borderForeColour).
+	Width(80)
 
 var paragraphStyle = lipgloss.NewStyle().
-	Align(lipgloss.Center).
-	Margin(1, 2, 1, 2).
-	Border(lipgloss.ThickBorder()).
-	BorderForeground(borderForeColour)
+	// Width(80).
+	// Align(lipgloss.Center).
+	Margin(1, 0)
 
 // ---------------- VIEW ----------------
 
@@ -70,19 +83,24 @@ func (m model) renderWords() string {
 
 // Render help
 func (m model) renderHelp() string {
-	var result string
-	suffix := "\t"
-	helpStrings := []string{
-		"[esc] Quit" + suffix,
-		"[tab] Reset" + suffix,
-		"[1] 10" + suffix,
-		"[2] 25" + suffix,
-		"[3] 50" + suffix,
-		"[4] 100",
-	}
-	result += defaultTextStyle.Render(lipgloss.JoinHorizontal(lipgloss.Top, helpStrings...))
+	style := defaultTextStyle.MarginRight(2)
 
-	return result
+	helpItems := []string{
+		"[esc] Quit",
+		"[tab] Reset",
+	}
+
+	var rendered []string
+	for _, s := range helpItems {
+		rendered = append(rendered, style.Render(s))
+	}
+
+	// Word count item with highlighted value
+	label := defaultTextStyle.Render("[1-4] Words:")
+	value := style.Bold(true).Foreground(mutedTextColour).Render(fmt.Sprintf(" %d", m.wordAmt))
+	rendered = append(rendered, label+value)
+
+	return lipgloss.JoinHorizontal(lipgloss.Top, rendered...)
 }
 
 // Renders the timer and wpm at the bottom of the screen
@@ -104,31 +122,50 @@ func (m model) renderStats() string {
 		result += fmt.Sprintf("%.0f%%", acc*100)
 	}
 
-	return defaultTextStyle.Render(result)
+	if m.done {
+		return defaultTextStyle.Bold(true).Foreground(lipgloss.Color("#ebcb8b")).Render(result)
+	} else {
+		return defaultTextStyle.Render(result)
+	}
 }
 
 // Render text field
 func (m model) renderParagraph() string {
-	return paragraphStyle.Render(lipgloss.JoinVertical(
-		lipgloss.Center,
-		m.renderHelp(),
-		m.renderWords(),
-		m.renderStats(),
+	innerWidth := 64 // borderStyle width(60) - 2 padding sides - 2 border chars
+
+	help := defaultTextStyle.Width(innerWidth).Align(lipgloss.Center).Render(m.renderHelp())
+	words := paragraphStyle.Width(innerWidth).Align(lipgloss.Left).Render(m.renderWords())
+	stats := defaultTextStyle.Width(innerWidth).Align(lipgloss.Center).Render(m.renderStats())
+
+	return lipgloss.JoinVertical(lipgloss.Left, help, words, stats)
+}
+
+// Render app
+func (m model) renderAll() string {
+	title := "\tWeaselTypo"
+	var status string
+	if time.Time.IsZero(m.startTime) {
+		status = "\tStart Typing!"
+	} else if !m.done {
+		status = "\t"
+	} else {
+		status = "\tDone!"
+	}
+
+	topline := lipgloss.JoinHorizontal(lipgloss.Top,
+		titleStyle.Render(title),
+		letterStyle.Foreground(lipgloss.Color("#ebcb8b")).Render(status),
+	)
+
+	return areaStyle.Render(lipgloss.JoinVertical(
+		lipgloss.Left,
+		topline,
+		borderStyle.Render(m.renderParagraph()),
 	))
 }
 
 func (m model) View() tea.View {
-	doneness := ""
-	if m.done {
-		doneness = "DONE LMAO"
-	}
-
-	// timer := ""
-
-	// Final layouting
-	return tea.NewView(lipgloss.JoinVertical(
-		lipgloss.Center,
-		m.renderParagraph(),
-		doneness,
-	))
+	v := tea.NewView(m.renderAll())
+	v.AltScreen = true
+	return v
 }
