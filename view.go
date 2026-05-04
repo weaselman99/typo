@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	tea "charm.land/bubbletea/v2"
+	"charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 )
 
@@ -17,6 +17,7 @@ var (
 	mutedTextColour       = lipgloss.Color("#c0c0c0")
 	incorrectLetterColour = lipgloss.Color("#bf616a")
 	borderForeColour      = lipgloss.Color("#5e81ac")
+	highlightColour       = lipgloss.Color("#ebcb8b")
 )
 
 var letterStyle = lipgloss.NewStyle().
@@ -45,9 +46,13 @@ var titleStyle = lipgloss.NewStyle().
 	Bold(true).
 	Foreground(defaultLetterColour)
 
+	// Border(lipgloss.RoundedBorder(), true, true, true).
+	// BorderForeground(borderForeColour).
+	// Padding(0, 1).
+	// Margin(0, 16, 0, 0)
+
 var borderStyle = lipgloss.NewStyle().
 	Align(lipgloss.Center).
-	Padding(1).
 	Border(lipgloss.DoubleBorder()).
 	BorderForeground(borderForeColour).
 	Width(80)
@@ -86,17 +91,18 @@ func (m model) renderHelp() string {
 	style := defaultTextStyle.MarginRight(2)
 
 	helpItems := []string{
-		"[esc] Quit",
-		"[tab] Reset",
+		"[esc] quit",
+		"[tab] reset",
 	}
 
 	var rendered []string
+	rendered = append(rendered, titleStyle.MarginRight(2).Render("WeaselTypo"))
 	for _, s := range helpItems {
 		rendered = append(rendered, style.Render(s))
 	}
 
 	// Word count item with highlighted value
-	label := defaultTextStyle.Render("[1-4] Words:")
+	label := defaultTextStyle.Render("[1-4] word count:")
 	value := style.Bold(true).Foreground(mutedTextColour).Render(fmt.Sprintf(" %d", m.wordAmt))
 	rendered = append(rendered, label+value)
 
@@ -123,7 +129,7 @@ func (m model) renderStats() string {
 	}
 
 	if m.done {
-		return defaultTextStyle.Bold(true).Foreground(lipgloss.Color("#ebcb8b")).Render(result)
+		return defaultTextStyle.Bold(true).Foreground(highlightColour).Render(result)
 	} else {
 		return defaultTextStyle.Render(result)
 	}
@@ -142,24 +148,20 @@ func (m model) renderParagraph() string {
 
 // Render app
 func (m model) renderAll() string {
-	title := "\tWeaselTypo"
 	var status string
+	statusStyle := letterStyle.Border(lipgloss.RoundedBorder(), true, true, false).BorderForeground(borderForeColour).Padding(0, 1)
 	if time.Time.IsZero(m.startTime) {
-		status = "\tStart Typing!"
+		status = statusStyle.Foreground(highlightColour).Render("Start Typing!")
 	} else if !m.done {
-		status = "\t"
+		status = statusStyle.Foreground(correctLetterColour).BorderForeground(correctLetterColour).Render("...")
 	} else {
-		status = "\tDone!"
+		status = statusStyle.Foreground(highlightColour).Render("Done!")
 	}
 
-	topline := lipgloss.JoinHorizontal(lipgloss.Top,
-		titleStyle.Render(title),
-		letterStyle.Foreground(lipgloss.Color("#ebcb8b")).Render(status),
-	)
-
+	letterStyle.Foreground(lipgloss.Color("#ebcb8b")).Render(status)
 	return areaStyle.Render(lipgloss.JoinVertical(
-		lipgloss.Left,
-		topline,
+		lipgloss.Center,
+		status,
 		borderStyle.Render(m.renderParagraph()),
 	))
 }
