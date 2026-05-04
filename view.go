@@ -121,7 +121,7 @@ func (m model) renderStats() string {
 	} else {
 		wpm, acc := stats(m.words, m.elapsedTimeSeconds)
 		// WPM
-		result += fmt.Sprintf("%.0fwpm\t", wpm)
+		result += fmt.Sprintf("%.1fwpm\t", wpm)
 		// Timer
 		result += fmt.Sprintf("%.1fs\t", m.elapsedTimeSeconds)
 		// Accuracy

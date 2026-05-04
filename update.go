@@ -15,8 +15,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case TickMsg:
 		if !m.done {
 			m.elapsedTimeSeconds = float64(time.Since(m.startTime).Milliseconds()) / 1000
-			return m, doTick()
 		}
+		return m, doTick()
 	}
 
 	return m, nil

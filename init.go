@@ -41,6 +41,7 @@ func (m *model) resetModel() {
 	m.wordPos = 0
 	m.charPos = 0
 	m.startTime = time.Time{}
+	m.elapsedTimeSeconds = 0
 	m.done = false
 }
 
