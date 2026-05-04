@@ -40,16 +40,16 @@ var defaultTextStyle = lipgloss.NewStyle().
 	Foreground(defaultTextColour)
 
 var areaStyle = lipgloss.NewStyle().
-	Margin(1, 1, 1, 1).Align(lipgloss.Left)
+	Margin(1, 1, 1, 1).
+	Align(lipgloss.Left)
 
 var titleStyle = lipgloss.NewStyle().
 	Bold(true).
-	Foreground(defaultLetterColour)
-
-	// Border(lipgloss.RoundedBorder(), true, true, true).
-	// BorderForeground(borderForeColour).
-	// Padding(0, 1).
-	// Margin(0, 16, 0, 0)
+	Italic(true).
+	Border(lipgloss.NormalBorder()).
+	BorderForeground(defaultTextColour).
+	Foreground(defaultTextColour).
+	Padding(0, 1)
 
 var borderStyle = lipgloss.NewStyle().
 	Align(lipgloss.Center).
@@ -58,8 +58,6 @@ var borderStyle = lipgloss.NewStyle().
 	Width(80)
 
 var paragraphStyle = lipgloss.NewStyle().
-	// Width(80).
-	// Align(lipgloss.Center).
 	Margin(1, 0)
 
 // ---------------- VIEW ----------------
@@ -106,7 +104,7 @@ func (m model) renderHelp() string {
 	value := style.Bold(true).Foreground(mutedTextColour).Render(fmt.Sprintf(" %d", m.wordAmt))
 	rendered = append(rendered, label+value)
 
-	return lipgloss.JoinHorizontal(lipgloss.Top, rendered...)
+	return lipgloss.JoinHorizontal(lipgloss.Center, rendered...)
 }
 
 // Renders the timer and wpm at the bottom of the screen
@@ -128,6 +126,19 @@ func (m model) renderStats() string {
 		result += fmt.Sprintf("%.0f%%", acc*100)
 	}
 
+	var status string
+	statusStyle := letterStyle.
+		MarginLeft(8)
+	if time.Time.IsZero(m.startTime) {
+		status = statusStyle.Foreground(highlightColour).Render("Start Typing!")
+	} else if !m.done {
+		// status = statusStyle.Foreground(correctLetterColour).BorderForeground(correctLetterColour).Render("...")
+		status = ""
+	} else {
+		status = statusStyle.Foreground(highlightColour).Render("Done!")
+	}
+	result += status
+
 	if m.done {
 		return defaultTextStyle.Bold(true).Foreground(highlightColour).Render(result)
 	} else {
@@ -139,29 +150,17 @@ func (m model) renderStats() string {
 func (m model) renderParagraph() string {
 	innerWidth := 64 // borderStyle width(60) - 2 padding sides - 2 border chars
 
-	help := defaultTextStyle.Width(innerWidth).Align(lipgloss.Center).Render(m.renderHelp())
+	help := defaultTextStyle.Width(innerWidth).Align(lipgloss.Left).Render(m.renderHelp())
 	words := paragraphStyle.Width(innerWidth).Align(lipgloss.Left).Render(m.renderWords())
-	stats := defaultTextStyle.Width(innerWidth).Align(lipgloss.Center).Render(m.renderStats())
+	stats := defaultTextStyle.Width(innerWidth).Align(lipgloss.Left).Render(m.renderStats())
 
 	return lipgloss.JoinVertical(lipgloss.Left, help, words, stats)
 }
 
 // Render app
 func (m model) renderAll() string {
-	var status string
-	statusStyle := letterStyle.Border(lipgloss.RoundedBorder(), true, true, false).BorderForeground(borderForeColour).Padding(0, 1)
-	if time.Time.IsZero(m.startTime) {
-		status = statusStyle.Foreground(highlightColour).Render("Start Typing!")
-	} else if !m.done {
-		status = statusStyle.Foreground(correctLetterColour).BorderForeground(correctLetterColour).Render("...")
-	} else {
-		status = statusStyle.Foreground(highlightColour).Render("Done!")
-	}
-
-	letterStyle.Foreground(lipgloss.Color("#ebcb8b")).Render(status)
 	return areaStyle.Render(lipgloss.JoinVertical(
 		lipgloss.Center,
-		status,
 		borderStyle.Render(m.renderParagraph()),
 	))
 }
