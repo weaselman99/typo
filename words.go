@@ -3,7 +3,6 @@ package main
 import (
 	"math/rand"
 	"strings"
-	"time"
 )
 
 type letterState int
@@ -28,8 +27,8 @@ func resetWord(word []letter) {
 }
 
 // stats() returns the calculated wpm and accuracy from completed session
-func stats(words [][]letter, timePassed time.Duration) (float64, float64) {
-	if timePassed.Seconds() < 1 {
+func stats(words [][]letter, timePassed float64) (float64, float64) {
+	if timePassed <= 0 {
 		return 0, 0
 	}
 
@@ -44,7 +43,7 @@ func stats(words [][]letter, timePassed time.Duration) (float64, float64) {
 		}
 	}
 
-	wpm := (float64(numCorrect) / 5) / timePassed.Minutes()
+	wpm := (float64(numCorrect) / 5) / (timePassed / 60)
 	acc := float64(numCorrect) / float64(numTotal)
 	return wpm, acc
 }

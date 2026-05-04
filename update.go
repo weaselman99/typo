@@ -14,6 +14,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.handleKey(msg)
 	case TickMsg:
 		if !m.done {
+			m.elapsedTimeSeconds = float64(time.Since(m.startTime).Milliseconds()) / 1000
 			return m, doTick()
 		}
 	}
@@ -50,7 +51,7 @@ func (m model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m model) handleBackspace() (tea.Model, tea.Cmd) {
 	// Delete previous word if user hasn't stated the next one,
 	// only if the previous word had errorrs
-	if m.charPos == 0 && !allCorrect(m.words[m.wordPos-1]) {
+	if m.charPos == 0 && m.wordPos != 0 && !allCorrect(m.words[m.wordPos-1]) {
 		m.wordPos--
 		m.words[m.wordPos] = slices.Clone(m.originalWords[m.wordPos])
 	} else {
@@ -84,7 +85,6 @@ func (m model) handleRune(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.startTime = time.Now()
 	}
 	// Check if its a single char
-	// if len(key.Text) == 1 {
 	input := rune(key.Text[0])
 
 	// Numbers to change word amounts

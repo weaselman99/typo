@@ -9,14 +9,14 @@ import (
 
 // ---------------- Model ----------------
 type model struct {
-	wordAmt       int
-	originalWords [][]letter
-	words         [][]letter
-	wordPos       int
-	charPos       int
-	done          bool
-	startTime     time.Time
-	endTime       time.Time
+	wordAmt            int
+	originalWords      [][]letter
+	words              [][]letter
+	wordPos            int
+	charPos            int
+	done               bool
+	startTime          time.Time
+	elapsedTimeSeconds float64
 }
 
 // Used to deep duplicate the [][]letter slice
