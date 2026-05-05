@@ -71,7 +71,7 @@ func castToLetters(words []string) [][]letter {
 // checks if the word is all correct
 func allCorrect(word []letter) bool {
 	for _, char := range word {
-		if char.state == Incorrect {
+		if char.state == Incorrect || char.state == Incomplete {
 			return false
 		}
 	}
