@@ -9,14 +9,14 @@ import (
 
 // ---------------- Model ----------------
 type model struct {
-	wordAmt            int
-	originalWords      [][]letter
-	words              [][]letter
-	wordPos            int
-	charPos            int
-	done               bool
-	startTime          time.Time
-	elapsedTimeSeconds float64
+	wordAmt            int        // How many words should be typed per session, default 10
+	originalWords      [][]letter // Used to reset words easily
+	words              [][]letter // Tracks current progress of user
+	wordPos            int        // Index of word in words
+	charPos            int        // Index of letter in word
+	done               bool       // Used to stop timers and wpm
+	startTime          time.Time  // Default to time.Time{}
+	elapsedTimeSeconds float64    // Time since startTime
 }
 
 // Used to deep duplicate the [][]letter slice

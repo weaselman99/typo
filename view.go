@@ -117,7 +117,7 @@ func (m model) renderStats() string {
 		result += fmt.Sprint("0.0s\t")
 		result += fmt.Sprint("0%")
 	} else {
-		wpm, acc := stats(m.words, m.elapsedTimeSeconds)
+		wpm, acc := stats(m.words, m.wordPos, m.elapsedTimeSeconds)
 		// WPM
 		result += fmt.Sprintf("%.1fwpm\t", wpm)
 		// Timer

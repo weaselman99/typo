@@ -12,13 +12,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		return m.handleKey(msg)
-	case TickMsg:
+	case TickMsg: // Called every milisecond
+		// Only update elapsedTime if we aint done
 		if !m.done && !m.startTime.IsZero() {
 			m.elapsedTimeSeconds = float64(time.Since(m.startTime).Milliseconds()) / 1000
 		}
 		return m, doTick()
 	}
-
 	return m, nil
 }
 

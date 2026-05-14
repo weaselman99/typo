@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Enum
 type letterState int
 
 const (
@@ -14,20 +15,14 @@ const (
 )
 
 type letter struct {
-	realChar rune
-	showChar rune
-	state    letterState
+	realChar rune        // To compute if the input (showChar) is correct or incorrect, then  update the state per letter
+	showChar rune        // Used to display the inputted rune
+	state    letterState // Used to highlight the showChar colour depending on state
 }
 
-// Resets the letters of a word to incomplete state
-func resetWord(word []letter) {
-	for _, char := range word {
-		char.state = Incomplete
-	}
-}
-
-// stats() returns the calculated wpm and accuracy from completed session
-func stats(words [][]letter, timePassed float64) (float64, float64) {
+// stats() returns the calculated wpm and accuracy from the current word array
+// called continuoursly by renderStats() in view.go
+func stats(words [][]letter, spaces int, timePassed float64) (float64, float64) {
 	if timePassed <= 0 {
 		return 0, 0
 	}
@@ -42,8 +37,7 @@ func stats(words [][]letter, timePassed float64) (float64, float64) {
 			}
 		}
 	}
-
-	wpm := (float64(numCorrect) / 5) / (timePassed / 60)
+	wpm := ((float64(numCorrect) + float64(spaces)) / 5) / (timePassed / 60) // (correct_chars + spaces) / 5_chars_per_minute
 	acc := float64(numCorrect) / float64(numTotal)
 	return wpm, acc
 }
@@ -69,6 +63,7 @@ func castToLetters(words []string) [][]letter {
 }
 
 // checks if the word is all correct
+// used to check if the session is done or registering a backspace to delete previous word
 func allCorrect(word []letter) bool {
 	for _, char := range word {
 		if char.state == Incorrect || char.state == Incomplete {
@@ -91,6 +86,7 @@ func shuffleWords(words []string) {
 	})
 }
 
+// Default word list, adding more is out of scope, but should be easy
 var wordlist = strings.Fields(`
 	the be of and a to in he have it that for they with as not on she at by
 	you do but from or which one would all will there say who make when can
